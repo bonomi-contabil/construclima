@@ -1,4 +1,4 @@
-import { calcularLPServico, parseBR, validar, CBS, IBS, PIS, COFINS, IRPJ, CSLL } from './calc.js';
+import { calcularLPServico, calcularRetencoes, INSS_RET, parseBR, validar, CBS, IBS, PIS, COFINS, IRPJ, CSLL } from './calc.js';
 
 const moeda = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
 const num = (casas) => new Intl.NumberFormat('pt-BR', { minimumFractionDigits: casas, maximumFractionDigits: casas });
@@ -42,7 +42,9 @@ for (const [id, cfg] of Object.entries(ABAS)) {
   painel.querySelector('[name=nome]').placeholder = cfg.exemplo;
   painel.querySelector('.rotulo-valor').textContent = cfg.rotuloValor;
   // nomes de rádio únicos por aba
-  painel.querySelectorAll('[name=temMateriais]').forEach((r) => (r.name = `temMateriais-${id}`));
+  for (const n of ['temMateriais', 'reterInss', 'reterIss']) {
+    painel.querySelectorAll(`[name=${n}]`).forEach((r) => (r.dataset.grupo = n, r.name = `${n}-${id}`));
+  }
   // ligar rótulos aos campos
   painel.querySelectorAll('.campo > label').forEach((lb, i) => {
     const inp = lb.parentElement.querySelector('input');
@@ -52,7 +54,7 @@ for (const [id, cfg] of Object.entries(ABAS)) {
     const fs = painel.querySelector('.materiais');
     fs.hidden = false;
     fs.addEventListener('change', () => {
-      const sim = fs.querySelector('input[type=radio]:checked').value === 'sim';
+      const sim = marcado(fs, 'temMateriais');
       fs.querySelector('.campo-materiais').hidden = !sim;
     });
   }
@@ -81,11 +83,13 @@ function avisoISS(painel) {
 }
 
 // ---------- Cálculo ----------
+const marcado = (el, grupo) => el.querySelector(`input[data-grupo=${grupo}]:checked`)?.value === 'sim';
+
 function calcular(id) {
   const painel = elPainel[id];
   const cfg = ABAS[id];
   const q = (n) => painel.querySelector(`[name=${n}]`);
-  const temMateriais = cfg.materiais && painel.querySelector('input[type=radio]:checked').value === 'sim';
+  const temMateriais = cfg.materiais && marcado(painel, 'temMateriais');
   const dados = {
     nome: q('nome').value.trim(),
     municipio: q('municipio').value.trim(),
@@ -93,6 +97,8 @@ function calcular(id) {
     valor: parseBR(q('valor').value),
     temMateriais,
     materiais: temMateriais ? parseBR(q('materiais').value) : 0,
+    reterInss: marcado(painel, 'reterInss'),
+    reterIss: marcado(painel, 'reterIss'),
   };
   const erros = validar(dados);
   const ul = painel.querySelector('.erros');
@@ -106,12 +112,13 @@ function calcular(id) {
   }
   ul.hidden = true;
   const r = calcularLPServico(dados.valor, dados.iss, dados.materiais);
-  out.innerHTML = montarResultado(r, dados, cfg);
+  const ret = calcularRetencoes(r, dados);
+  out.innerHTML = montarResultado(r, dados, cfg, ret);
   out.hidden = false;
   out.querySelector('.imprimir').addEventListener('click', () => window.print());
 }
 
-function montarResultado(r, d, cfg) {
+function montarResultado(r, d, cfg, ret) {
   const { atual: a, novo: n } = r;
   const aumento = n.totalNF >= r.V;
   const sinal = r.variacao > 0 ? '+' : '';
@@ -190,12 +197,23 @@ function montarResultado(r, d, cfg) {
     </div>
   </div>
 
+  <div class="coluna nf-liquida">
+    <h3>Nota fiscal pós-reforma — bruto e líquido</h3>
+    <table>
+      <tr class="destaque"><td>Valor Bruto da NF</td><td>${R(ret.bruto)}</td></tr>
+      ${d.reterInss ? `<tr><td>(−) Retenção de INSS (${P(INSS_RET)} sobre ${R(ret.base)})</td><td>${R(ret.inss)}</td></tr>` : ''}
+      ${d.reterIss ? `<tr><td>(−) Retenção de ISS (${linhaIss} sobre ${R(ret.base)})</td><td>${R(ret.iss)}</td></tr>` : ''}
+      ${!d.reterInss && !d.reterIss ? '<tr><td>Sem retenções</td><td>—</td></tr>' : ''}
+      <tr class="destaque liquido"><td>Valor Líquido da NF</td><td>${R(ret.liquido)}</td></tr>
+    </table>
+  </div>
+
   <div class="avisos">
     <p>* CBS e IBS destacados na nota: cobrados por fora do preço base.</p>
     <p>O ISS permanece até a implementação plena do IBS.</p>
     <p>“Lucro” é o saldo após os tributos considerados, antes de custos e despesas (equipamentos, materiais, mão de obra, deslocamento e despesas operacionais). A ferramenta não garante a preservação da margem real.</p>
     ${d.temMateriais ? '<p>O adicional de materiais entra no valor da nota, mas foi abatido da base de cálculo de todos os tributos (PIS, COFINS, ISS, IRPJ, CSLL, CBS e IBS). O “Lucro” considera só o serviço; os materiais são repassados pelo valor informado. Confirmar com o contador a comprovação exigida para a dedução.</p>' : ''}
-    <p>Estimativa com base nas premissas de transição de 2027 adotadas nesta ferramenta. Alíquotas e regras aplicáveis devem ser confirmadas conforme a legislação vigente. Custos e despesas operacionais não estão incluídos. Consulte o responsável contábil da Construclima.</p>
+    <p>Estimativa com base nas premissas de transição de 2027 adotadas nesta ferramenta. Alíquotas e regras aplicáveis devem ser confirmadas conforme a legislação vigente. Custos e despesas operacionais não estão incluídos.</p>
     <p>Para serviços de engenharia e instalação de ar-condicionado, confirmar enquadramento tributário e retenções conforme a atividade e o contrato. Esta simulação não contempla particularidades de contratos mistos ou fornecimento de equipamentos junto à instalação.</p>
   </div>
 

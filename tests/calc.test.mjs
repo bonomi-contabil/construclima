@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { calcularLPServico, parseBR, validar } from '../js/calc.js';
+import { calcularLPServico, calcularRetencoes, parseBR, validar } from '../js/calc.js';
 
 const perto = (a, b, tol = 0.005) => assert.ok(Math.abs(a - b) <= tol, `${a} ≠ ${b}`);
 
@@ -38,6 +38,24 @@ test('materiais abatidos da base de todos os tributos', () => {
   perto(a.novo.precoBase, 961.58 + 500);
   perto(a.novo.totalNF, 1066.08 + 500);
   perto(a.variacao, (66.0833 / 1500) * 100, 0.001);
+});
+
+test('retenções de INSS (11%) e ISS sobre o preço base pós-reforma', () => {
+  const r = calcularLPServico(1000, 5);
+  const sem = calcularRetencoes(r);
+  perto(sem.bruto, 1066.08);
+  perto(sem.liquido, 1066.08);
+  const inss = calcularRetencoes(r, { reterInss: true });
+  perto(inss.inss, 961.5789 * 0.11);
+  perto(inss.liquido, 1066.0833 - 105.7737);
+  const ambos = calcularRetencoes(r, { reterInss: true, reterIss: true });
+  perto(ambos.iss, 961.5789 * 0.05);
+  perto(ambos.liquido, 1066.0833 - 105.7737 - 48.0789);
+  // com materiais, a base é o preço base total (serviço + materiais)
+  const m = calcularLPServico(1000, 2, 500);
+  const rm = calcularRetencoes(m, { reterInss: true, reterIss: true });
+  perto(rm.base, m.novo.precoBase);
+  perto(rm.liquido, m.novo.totalNF - m.novo.precoBase * 0.13);
 });
 
 test('lucro novo não desconta CBS/IBS (por fora)', () => {

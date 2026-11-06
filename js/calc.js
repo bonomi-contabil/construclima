@@ -7,6 +7,7 @@ export const PIS = 0.0065; // 0,65%
 export const COFINS = 0.03; // 3,00%
 export const IRPJ = 0.048; // 4,80% (presunção de serviço)
 export const CSLL = 0.0288; // 2,88% (presunção de serviço)
+export const INSS_RET = 0.11; // retenção de INSS: 11%
 
 // Converte texto em formato brasileiro ("1.000,00", "5", "2,5") para número.
 // Retorna NaN se não for um número válido.
@@ -73,6 +74,19 @@ export function calcularLPServico(valorServico, issPercent, materiais = 0) {
 
   const variacao = ((novo.totalNF - V) / V) * 100;
   return { V, valorServico, materiais, issAliquota: iss, atual, novo, variacao };
+}
+
+/**
+ * Retenções na nota pós-reforma. Base de cálculo = Preço base — pós-reforma.
+ * INSS: 11%. ISS: a alíquota do ISS informada.
+ * Valor líquido = Valor bruto da NF (total pós-reforma) − retenções.
+ */
+export function calcularRetencoes(r, { reterInss = false, reterIss = false } = {}) {
+  const base = r.novo.precoBase;
+  const inss = reterInss ? base * INSS_RET : 0;
+  const iss = reterIss ? base * r.issAliquota : 0;
+  const bruto = r.novo.totalNF;
+  return { base, inss, iss, total: inss + iss, bruto, liquido: bruto - inss - iss };
 }
 
 /** Valida entradas; devolve lista de mensagens de erro (vazia = ok). */

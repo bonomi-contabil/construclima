@@ -110,6 +110,10 @@ fieldset.materiais legend { padding: 0 4px; }
 .coluna tr.sub td { font-weight: 600; }
 .coluna tr.destaque td { font-weight: 700; }
 .coluna tr.destaque:last-child td { border-bottom: none; }
+.nf-liquida { margin-top: 12px; }
+.nf-liquida tr.liquido td { color: var(--marca); font-size: 1rem; }
+fieldset.retencao { border: none; padding: 0; margin: 0 0 12px; }
+fieldset.retencao legend { padding: 0; margin-bottom: 4px; }
 .tag { display: inline-block; font-size: .72rem; color: var(--suave); border: 1px solid var(--borda); border-radius: 3px; padding: 0 4px; margin-left: 2px; white-space: nowrap; }
 
 .avisos { margin: 14px 0; font-size: .85rem; color: var(--suave); }

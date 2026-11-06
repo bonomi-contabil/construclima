@@ -91,6 +91,16 @@
             <input type="text" name="materiais" inputmode="decimal" placeholder="0,00">
           </div>
         </fieldset>
+        <fieldset class="campo retencao">
+          <legend>Terá retenção de INSS? <span class="opcional">(11% sobre o preço base pós-reforma)</span></legend>
+          <label class="opcao"><input type="radio" name="reterInss" value="nao" checked> Não</label>
+          <label class="opcao"><input type="radio" name="reterInss" value="sim"> Sim</label>
+        </fieldset>
+        <fieldset class="campo retencao">
+          <legend>Terá retenção de ISS? <span class="opcional">(alíquota informada, sobre o preço base pós-reforma)</span></legend>
+          <label class="opcao"><input type="radio" name="reterIss" value="nao" checked> Não</label>
+          <label class="opcao"><input type="radio" name="reterIss" value="sim"> Sim</label>
+        </fieldset>
         <p class="aviso-iss" hidden></p>
         <ul class="erros" hidden></ul>
         <button type="submit" class="botao nao-imprimir">Calcular preço sugerido</button>
