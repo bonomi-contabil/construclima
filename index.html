@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Construclima — Precificador e Orçamento</title>
+  <meta name="description" content="Construclima: precificador pós-reforma tributária para serviços de instalação e obras de climatização, e orçamentos.">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="topo">
+    <a href="#/" class="marca" aria-label="Início">
+      <img src="assets/logo.png" alt="Construclima" class="logo" id="logo">
+      <span class="marca-texto" id="marca-texto" hidden>Construclima</span>
+    </a>
+    <div class="topo-titulo">
+      <h1 id="titulo-pagina">Precificador e Orçamento</h1>
+      <p class="apoio" id="subtitulo">Engenharia e instalação de ar-condicionado</p>
+    </div>
+  </header>
+
+  <main class="conteudo">
+    <!-- INÍCIO: dois botões -->
+    <section id="tela-inicio" class="tela">
+      <div class="botoes-inicio">
+        <a href="#/precificador" class="botao-grande">
+          <span class="botao-grande-titulo">Precificador</span>
+          <span class="botao-grande-desc">Compare o preço atual com o preço simulado pós-reforma tributária (2027).</span>
+        </a>
+        <a href="#/orcamento" class="botao-grande">
+          <span class="botao-grande-titulo">Orçamento</span>
+          <span class="botao-grande-desc">Montagem de orçamentos com cláusulas e condições.</span>
+        </a>
+      </div>
+    </section>
+
+    <!-- PRECIFICADOR -->
+    <section id="tela-precificador" class="tela" hidden>
+      <a href="#/" class="voltar nao-imprimir">← Voltar ao início</a>
+
+      <nav class="abas nao-imprimir" role="tablist">
+        <button role="tab" class="aba" data-aba="instalacoes" aria-selected="true">Serviços de Instalações — Lucro Presumido</button>
+        <button role="tab" class="aba" data-aba="obras" aria-selected="false">Serviços em Obras — Lucro Presumido</button>
+      </nav>
+
+      <div id="paineis"></div>
+    </section>
+
+    <!-- ORÇAMENTO -->
+    <section id="tela-orcamento" class="tela" hidden>
+      <a href="#/" class="voltar">← Voltar ao início</a>
+      <div class="cartao em-breve">
+        <h2>Orçamento</h2>
+        <p>Em desenvolvimento. As regras, cláusulas e condições do orçamento serão definidas na próxima etapa.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="rodape">
+    <p>© <span id="ano"></span> Construclima — ferramenta de estimativa, não substitui análise tributária individualizada.</p>
+  </footer>
+
+  <template id="modelo-painel">
+    <div class="painel" role="tabpanel">
+      <form class="cartao formulario" novalidate>
+        <div class="campo">
+          <label>Serviço / obra <span class="opcional">(opcional)</span></label>
+          <input type="text" name="nome" placeholder="Instalação de ar-condicionado em edifício comercial">
+        </div>
+        <div class="linha-2">
+          <div class="campo">
+            <label>Município da prestação do serviço</label>
+            <input type="text" name="municipio" placeholder="Ex.: Campinas/SP" autocomplete="off">
+          </div>
+          <div class="campo">
+            <label>Alíquota do ISS no município (%)</label>
+            <input type="text" name="iss" inputmode="decimal" placeholder="Ex.: 5,00">
+          </div>
+        </div>
+        <div class="campo">
+          <label class="rotulo-valor">Valor atual do serviço (R$)</label>
+          <input type="text" name="valor" inputmode="decimal" placeholder="1.000,00">
+        </div>
+        <fieldset class="campo materiais" hidden>
+          <legend>Haverá adicional de materiais?</legend>
+          <label class="opcao"><input type="radio" name="temMateriais" value="nao" checked> Não</label>
+          <label class="opcao"><input type="radio" name="temMateriais" value="sim"> Sim</label>
+          <div class="campo campo-materiais" hidden>
+            <label>Valor do adicional de materiais (R$)</label>
+            <input type="text" name="materiais" inputmode="decimal" placeholder="0,00">
+          </div>
+        </fieldset>
+        <p class="aviso-iss" hidden></p>
+        <ul class="erros" hidden></ul>
+        <button type="submit" class="botao nao-imprimir">Calcular preço sugerido</button>
+      </form>
+      <div class="resultado" hidden></div>
+    </div>
+  </template>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,80 @@
+// Fórmulas do Precificador pós-reforma tributária (Lucro Presumido — Serviços).
+// Somente cálculo: sem formatação nem DOM. Precisão integral; arredondar só na exibição.
+
+export const CBS = 0.1134; // 11,34%
+export const IBS = 0.001;  // 0,10%
+export const PIS = 0.0065; // 0,65%
+export const COFINS = 0.03; // 3,00%
+export const IRPJ = 0.048; // 4,80% (presunção de serviço)
+export const CSLL = 0.0288; // 2,88% (presunção de serviço)
+
+// Converte texto em formato brasileiro ("1.000,00", "5", "2,5") para número.
+// Retorna NaN se não for um número válido.
+export function parseBR(texto) {
+  if (typeof texto === 'number') return texto;
+  if (texto == null) return NaN;
+  let s = String(texto).trim().replace(/^R\$\s*/i, '').replace(/%$/, '').trim();
+  if (s === '') return NaN;
+  if (s.includes(',')) {
+    s = s.replace(/\./g, '').replace(',', '.');
+  } else if (/^\d{1,3}(\.\d{3})+$/.test(s)) {
+    s = s.replace(/\./g, ''); // "1.000" = mil
+  }
+  if (!/^-?\d+(\.\d+)?$/.test(s)) return NaN;
+  return Number(s);
+}
+
+/**
+ * Lucro Presumido — Serviço, com ISS informado pelo usuário.
+ * @param {number} valorServico  valor atual do serviço (R$)
+ * @param {number} issPercent    alíquota do ISS do município (%), ex.: 5 ou 2,5
+ * @param {number} [materiais=0] adicional de materiais (R$), somado ao valor da nota
+ */
+export function calcularLPServico(valorServico, issPercent, materiais = 0) {
+  const iss = issPercent / 100;
+  const V = valorServico + materiais;
+
+  const atual = {
+    pis: V * PIS,
+    cofins: V * COFINS,
+    iss: V * iss,
+    irpj: V * IRPJ,
+    csll: V * CSLL,
+  };
+  atual.totalTributos = atual.pis + atual.cofins + atual.iss + atual.irpj + atual.csll;
+  atual.lucro = V - atual.totalTributos;
+  atual.precoCliente = V;
+  atual.carga = atual.totalTributos / V;
+
+  const baseBruta = V - atual.pis - atual.cofins - atual.iss;
+  const precoBase = baseBruta / (1 - iss);
+  const issNovo = precoBase * iss;
+  const baseCbsIbs = precoBase - issNovo;
+  const novo = {
+    baseBruta,
+    precoBase,
+    iss: issNovo,
+    baseCbsIbs,
+    cbs: baseCbsIbs * CBS,
+    ibs: baseCbsIbs * IBS,
+    irpj: precoBase * IRPJ,
+    csll: precoBase * CSLL,
+  };
+  novo.totalTributos = novo.iss + novo.irpj + novo.csll + novo.cbs + novo.ibs;
+  novo.lucro = precoBase - novo.iss - novo.irpj - novo.csll;
+  novo.totalNF = precoBase + novo.cbs + novo.ibs;
+  novo.precoCliente = novo.totalNF;
+
+  const variacao = ((novo.totalNF - V) / V) * 100;
+  return { V, valorServico, materiais, issAliquota: iss, atual, novo, variacao };
+}
+
+/** Valida entradas; devolve lista de mensagens de erro (vazia = ok). */
+export function validar({ valor, iss, municipio, temMateriais, materiais }) {
+  const erros = [];
+  if (!municipio || !String(municipio).trim()) erros.push('Informe o município da prestação do serviço.');
+  if (!(iss > 0 && iss < 100)) erros.push('Informe a alíquota do ISS: maior que 0% e menor que 100%.');
+  if (!(valor > 0)) erros.push('Informe um valor atual maior que zero.');
+  if (temMateriais && !(materiais > 0)) erros.push('Informe o valor do adicional de materiais (maior que zero).');
+  return erros;
+}
