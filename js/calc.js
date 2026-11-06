@@ -2,7 +2,7 @@
 // Somente cálculo: sem formatação nem DOM. Precisão integral; arredondar só na exibição.
 
 export const CBS = 0.1134; // 11,34%
-export const IBS = 0.0001; // 0,01%
+export const IBS = 0.001;  // 0,10%
 export const PIS = 0.0065; // 0,65%
 export const COFINS = 0.03; // 3,00%
 export const IRPJ = 0.048; // 4,80% (Serviços de Instalações)
