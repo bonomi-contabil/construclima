@@ -1,7 +1,7 @@
 /* Cor institucional: troque --marca pela cor do logotipo da Construclima. */
 :root {
-  --marca: #0b4f8a;
-  --marca-escura: #083a66;
+  --marca: #1e5d85;
+  --marca-escura: #154766;
   --verde: #1f7a3f;
   --ambar: #b26a00;
   --vermelho: #b3261e;
@@ -27,7 +27,7 @@ body {
 .topo, .conteudo, .rodape { max-width: 760px; margin: 0 auto; padding-left: 16px; padding-right: 16px; }
 .topo { display: flex; align-items: center; gap: 16px; padding-top: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--borda); }
 .marca { display: flex; align-items: center; text-decoration: none; color: var(--marca); flex-shrink: 0; }
-.logo { max-height: 56px; max-width: 180px; display: block; }
+.logo { height: 64px; width: auto; display: block; border-radius: 4px; }
 .marca-texto { font-weight: 700; font-size: 1.35rem; letter-spacing: .01em; }
 .topo-titulo h1 { margin: 0; font-size: 1.3rem; line-height: 1.2; }
 .apoio { margin: 2px 0 0; color: var(--suave); font-size: .95rem; }
@@ -42,7 +42,7 @@ body {
   background: var(--cartao); border: 1px solid var(--borda); border-left: 4px solid var(--marca);
   border-radius: var(--raio); text-decoration: none; color: var(--texto);
 }
-.botao-grande:hover, .botao-grande:focus-visible { border-color: var(--marca); outline: none; box-shadow: 0 0 0 2px rgba(11,79,138,.15); }
+.botao-grande:hover, .botao-grande:focus-visible { border-color: var(--marca); outline: none; box-shadow: 0 0 0 2px rgba(30,93,133,.15); }
 .botao-grande-titulo { font-size: 1.3rem; font-weight: 700; color: var(--marca); }
 .botao-grande-desc { color: var(--suave); font-size: .95rem; }
 .em-breve h2 { margin-top: 0; color: var(--marca); }
@@ -64,7 +64,7 @@ body {
 .campo input[type=text] {
   font: inherit; padding: 9px 11px; border: 1px solid var(--borda); border-radius: var(--raio); background: #fff; color: var(--texto); width: 100%;
 }
-.campo input[type=text]:focus { outline: 2px solid rgba(11,79,138,.35); border-color: var(--marca); }
+.campo input[type=text]:focus { outline: 2px solid rgba(30,93,133,.35); border-color: var(--marca); }
 .linha-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 fieldset.materiais { border: 1px solid var(--borda); border-radius: var(--raio); padding: 10px 14px 4px; }
 fieldset.materiais legend { padding: 0 4px; }

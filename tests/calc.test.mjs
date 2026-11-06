@@ -27,12 +27,17 @@ test('ISS informado (2%) muda a conta', () => {
   perto(r.novo.totalNF, 943.50 / 0.98 + 943.50 * 0.1144);
 });
 
-test('adicional de materiais entra no valor da nota', () => {
-  const a = calcularLPServico(800, 5, 200);
+test('materiais abatidos da base de todos os tributos', () => {
+  const a = calcularLPServico(1000, 5, 500);
   const b = calcularLPServico(1000, 5);
-  perto(a.V, 1000);
-  perto(a.novo.totalNF, b.novo.totalNF);
-  assert.equal(a.materiais, 200);
+  perto(a.V, 1500);
+  // tributos idênticos aos do serviço sozinho
+  for (const k of ['pis', 'cofins', 'iss', 'irpj', 'csll', 'totalTributos', 'lucro']) perto(a.atual[k], b.atual[k]);
+  for (const k of ['iss', 'irpj', 'csll', 'cbs', 'ibs', 'baseCbsIbs', 'totalTributos', 'lucro']) perto(a.novo[k], b.novo[k]);
+  perto(a.atual.precoCliente, 1500);
+  perto(a.novo.precoBase, 961.58 + 500);
+  perto(a.novo.totalNF, 1066.08 + 500);
+  perto(a.variacao, (66.0833 / 1500) * 100, 0.001);
 });
 
 test('lucro novo não desconta CBS/IBS (por fora)', () => {

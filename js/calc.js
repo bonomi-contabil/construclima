@@ -26,43 +26,49 @@ export function parseBR(texto) {
 
 /**
  * Lucro Presumido — Serviço, com ISS informado pelo usuário.
- * @param {number} valorServico  valor atual do serviço (R$)
+ * O adicional de materiais entra no valor da nota, mas é ABATIDO da base de
+ * cálculo de todos os tributos (PIS, COFINS, ISS, IRPJ, CSLL, CBS e IBS):
+ * os tributos incidem só sobre o valor do serviço.
+ * @param {number} valorServico  valor atual do serviço (R$), sem materiais
  * @param {number} issPercent    alíquota do ISS do município (%), ex.: 5 ou 2,5
- * @param {number} [materiais=0] adicional de materiais (R$), somado ao valor da nota
+ * @param {number} [materiais=0] adicional de materiais (R$)
  */
 export function calcularLPServico(valorServico, issPercent, materiais = 0) {
   const iss = issPercent / 100;
-  const V = valorServico + materiais;
+  const S = valorServico;      // base de cálculo (materiais abatidos)
+  const V = S + materiais;     // valor total da nota atual
 
   const atual = {
-    pis: V * PIS,
-    cofins: V * COFINS,
-    iss: V * iss,
-    irpj: V * IRPJ,
-    csll: V * CSLL,
+    base: S,
+    pis: S * PIS,
+    cofins: S * COFINS,
+    iss: S * iss,
+    irpj: S * IRPJ,
+    csll: S * CSLL,
   };
   atual.totalTributos = atual.pis + atual.cofins + atual.iss + atual.irpj + atual.csll;
-  atual.lucro = V - atual.totalTributos;
+  atual.lucro = S - atual.totalTributos;
   atual.precoCliente = V;
   atual.carga = atual.totalTributos / V;
 
-  const baseBruta = V - atual.pis - atual.cofins - atual.iss;
-  const precoBase = baseBruta / (1 - iss);
-  const issNovo = precoBase * iss;
-  const baseCbsIbs = precoBase - issNovo;
+  const baseBruta = S - atual.pis - atual.cofins - atual.iss;
+  const precoBaseServico = baseBruta / (1 - iss);
+  const issNovo = precoBaseServico * iss;
+  const baseCbsIbs = precoBaseServico - issNovo;
   const novo = {
     baseBruta,
-    precoBase,
+    precoBaseServico,
+    precoBase: precoBaseServico + materiais, // valor sem CBS/IBS (serviço + materiais)
     iss: issNovo,
     baseCbsIbs,
     cbs: baseCbsIbs * CBS,
     ibs: baseCbsIbs * IBS,
-    irpj: precoBase * IRPJ,
-    csll: precoBase * CSLL,
+    irpj: precoBaseServico * IRPJ,
+    csll: precoBaseServico * CSLL,
   };
   novo.totalTributos = novo.iss + novo.irpj + novo.csll + novo.cbs + novo.ibs;
-  novo.lucro = precoBase - novo.iss - novo.irpj - novo.csll;
-  novo.totalNF = precoBase + novo.cbs + novo.ibs;
+  novo.lucro = precoBaseServico - novo.iss - novo.irpj - novo.csll;
+  novo.totalNF = novo.precoBase + novo.cbs + novo.ibs;
   novo.precoCliente = novo.totalNF;
 
   const variacao = ((novo.totalNF - V) / V) * 100;
