@@ -71,16 +71,16 @@
         <div class="linha-2">
           <div class="campo">
             <label>Município da prestação do serviço</label>
-            <input type="text" name="municipio" placeholder="Ex.: Campinas/SP" autocomplete="off">
+            <input type="text" name="municipio" placeholder="Digite o nome — ex.: Campinas" autocomplete="off" spellcheck="false">
           </div>
           <div class="campo">
             <label>Alíquota do ISS no município (%)</label>
-            <input type="text" name="iss" inputmode="decimal" placeholder="Ex.: 5,00">
+            <input type="text" name="iss" inputmode="numeric" placeholder="0,00%">
           </div>
         </div>
         <div class="campo">
           <label class="rotulo-valor">Valor atual do serviço (R$)</label>
-          <input type="text" name="valor" inputmode="decimal" placeholder="1.000,00">
+          <input type="text" name="valor" inputmode="numeric" placeholder="R$ 0,00">
         </div>
         <fieldset class="campo materiais" hidden>
           <legend>Haverá adicional de materiais?</legend>
@@ -88,7 +88,7 @@
           <label class="opcao"><input type="radio" name="temMateriais" value="sim"> Sim</label>
           <div class="campo campo-materiais" hidden>
             <label>Valor do adicional de materiais (R$)</label>
-            <input type="text" name="materiais" inputmode="decimal" placeholder="0,00">
+            <input type="text" name="materiais" inputmode="numeric" placeholder="R$ 0,00">
           </div>
         </fieldset>
         <fieldset class="campo retencao">

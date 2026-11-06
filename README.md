@@ -25,3 +25,6 @@ e abrir http://localhost:8080
 ## Publicação
 `.github/workflows/pages.yml` roda os testes e publica no GitHub Pages a cada push no `main`
 (ativar em Settings → Pages → Source: GitHub Actions).
+
+## Municípios
+`assets/municipios.json`: os 5.571 municípios do IBGE (tabela 2026), extraídos do pacote npm `@br-geo-kit/ibge` (licença MIT).

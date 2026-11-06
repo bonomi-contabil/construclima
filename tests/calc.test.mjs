@@ -84,6 +84,8 @@ test('parseBR aceita formato brasileiro', () => {
   assert.equal(parseBR('1000'), 1000);
   assert.equal(parseBR('1.000'), 1000);
   assert.equal(parseBR('R$ 50,10'), 50.1);
+  assert.equal(parseBR('R$\u00a01.234,56'), 1234.56);
+  assert.equal(parseBR('5,00%'), 5);
   assert.ok(Number.isNaN(parseBR('')));
   assert.ok(Number.isNaN(parseBR('abc')));
   assert.ok(Number.isNaN(parseBR('1,2,3')));

@@ -70,6 +70,14 @@ fieldset.materiais { border: 1px solid var(--borda); border-radius: var(--raio);
 fieldset.materiais legend { padding: 0 4px; }
 .opcao { display: inline-flex; align-items: center; gap: 6px; margin-right: 18px; font-weight: 400 !important; cursor: pointer; }
 .campo-materiais { margin-top: 10px; }
+.ac { position: relative; }
+.ac-lista {
+  position: absolute; z-index: 10; left: 0; right: 0; top: calc(100% + 2px); margin: 0; padding: 4px 0; list-style: none;
+  background: #fff; border: 1px solid var(--borda); border-radius: var(--raio); box-shadow: 0 4px 12px rgba(0,0,0,.08);
+  max-height: 260px; overflow-y: auto;
+}
+.ac-lista li { padding: 7px 11px; cursor: pointer; font-size: .95rem; }
+.ac-lista li.ativo, .ac-lista li:hover { background: #eaf1f6; color: var(--marca); }
 .aviso-iss { color: var(--ambar); font-size: .9rem; margin: 0 0 12px; }
 .erros { color: var(--vermelho); margin: 0 0 12px; padding-left: 20px; font-size: .93rem; }
 

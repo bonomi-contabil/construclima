@@ -1,4 +1,5 @@
 import { calcularLPServico, calcularRetencoes, INSS_RET, parseBR, validar, CBS, IBS, PIS, COFINS, IRPJ_OBRAS, CSLL_OBRAS } from './calc.js';
+import { aplicarMascara, autocompletarMunicipio, municipioValido } from './campos.js';
 
 const moeda = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
 const num = (casas) => new Intl.NumberFormat('pt-BR', { minimumFractionDigits: casas, maximumFractionDigits: casas });
@@ -62,6 +63,10 @@ for (const [id, cfg] of Object.entries(ABAS)) {
   const form = painel.querySelector('form');
   form.addEventListener('submit', (e) => { e.preventDefault(); calcular(id); });
   const iss = painel.querySelector('[name=iss]');
+  aplicarMascara(iss, 'percent');
+  aplicarMascara(painel.querySelector('[name=valor]'), 'moeda');
+  aplicarMascara(painel.querySelector('[name=materiais]'), 'moeda');
+  autocompletarMunicipio(painel.querySelector('[name=municipio]'));
   iss.addEventListener('input', () => avisoISS(painel));
   paineis.appendChild(frag);
   elPainel[id] = paineis.lastElementChild;
@@ -102,6 +107,9 @@ function calcular(id) {
     reterIss: marcado(painel, 'reterIss'),
   };
   const erros = validar(dados);
+  if (dados.municipio && municipioValido(dados.municipio) === false) {
+    erros.unshift('Município não encontrado: escolha um município da lista que aparece ao digitar.');
+  }
   const ul = painel.querySelector('.erros');
   const out = painel.querySelector('.resultado');
   if (erros.length) {
