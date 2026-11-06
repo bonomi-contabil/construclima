@@ -62,6 +62,16 @@ for (const [id, cfg] of Object.entries(ABAS)) {
   }
   const form = painel.querySelector('form');
   form.addEventListener('submit', (e) => { e.preventDefault(); calcular(id); });
+  painel.querySelector('.limpar').addEventListener('click', () => {
+    form.reset();
+    painel.querySelector('.campo-materiais').hidden = true;
+    painel.querySelector('.aviso-iss').hidden = true;
+    painel.querySelector('.erros').hidden = true;
+    const out = painel.querySelector('.resultado');
+    out.hidden = true;
+    out.innerHTML = '';
+    painel.querySelector('[name=municipio]').focus();
+  });
   const iss = painel.querySelector('[name=iss]');
   aplicarMascara(iss, 'percent');
   aplicarMascara(painel.querySelector('[name=valor]'), 'moeda');
