@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { calcularLPServico, calcularRetencoes, parseBR, validar } from '../js/calc.js';
+import { calcularLPServico, calcularRetencoes, IRPJ_OBRAS, CSLL_OBRAS, parseBR, validar } from '../js/calc.js';
 
 const perto = (a, b, tol = 0.005) => assert.ok(Math.abs(a - b) <= tol, `${a} ≠ ${b}`);
 
@@ -51,11 +51,24 @@ test('retenções de INSS (11%) e ISS sobre o preço base pós-reforma', () => {
   const ambos = calcularRetencoes(r, { reterInss: true, reterIss: true });
   perto(ambos.iss, 961.5789 * 0.05);
   perto(ambos.liquido, 1066.0833 - 105.7737 - 48.0789);
-  // com materiais, a base é o preço base total (serviço + materiais)
+  // com materiais, a base é só o serviço; materiais só somam no bruto/líquido
   const m = calcularLPServico(1000, 2, 500);
   const rm = calcularRetencoes(m, { reterInss: true, reterIss: true });
-  perto(rm.base, m.novo.precoBase);
-  perto(rm.liquido, m.novo.totalNF - m.novo.precoBase * 0.13);
+  perto(rm.base, m.novo.precoBaseServico);
+  perto(rm.base, 943.5 / 0.98);
+  perto(rm.liquido, m.novo.totalNF - m.novo.precoBaseServico * 0.13);
+});
+
+test('Serviços em Obras: IRPJ 1,20% e CSLL 1,08%; pós-reforma sem PIS/COFINS', () => {
+  const r = calcularLPServico(1000, 5, 0, { irpj: IRPJ_OBRAS, csll: CSLL_OBRAS });
+  perto(r.atual.irpj, 12); perto(r.atual.csll, 10.8);
+  perto(r.atual.pis, 6.5); perto(r.atual.cofins, 30); perto(r.atual.iss, 50);
+  perto(r.atual.totalTributos, 109.3);
+  perto(r.novo.precoBase, 961.58);
+  perto(r.novo.irpj, 961.5789 * 0.012); perto(r.novo.csll, 961.5789 * 0.0108);
+  perto(r.novo.totalTributos, r.novo.iss + r.novo.irpj + r.novo.csll + r.novo.cbs + r.novo.ibs);
+  perto(r.novo.totalNF, 1066.08);
+  assert.equal(r.novo.pis, undefined);
 });
 
 test('lucro novo não desconta CBS/IBS (por fora)', () => {

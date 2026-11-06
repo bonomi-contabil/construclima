@@ -1,4 +1,4 @@
-import { calcularLPServico, calcularRetencoes, INSS_RET, parseBR, validar, CBS, IBS, PIS, COFINS, IRPJ, CSLL } from './calc.js';
+import { calcularLPServico, calcularRetencoes, INSS_RET, parseBR, validar, CBS, IBS, PIS, COFINS, IRPJ_OBRAS, CSLL_OBRAS } from './calc.js';
 
 const moeda = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
 const num = (casas) => new Intl.NumberFormat('pt-BR', { minimumFractionDigits: casas, maximumFractionDigits: casas });
@@ -27,6 +27,7 @@ const ABAS = {
     exemplo: 'Climatização de obra — edifício comercial',
     rotuloValor: 'Valor atual do serviço em obra (R$)',
     materiais: true,
+    aliq: { irpj: IRPJ_OBRAS, csll: CSLL_OBRAS },
   },
 };
 
@@ -111,7 +112,7 @@ function calcular(id) {
     return;
   }
   ul.hidden = true;
-  const r = calcularLPServico(dados.valor, dados.iss, dados.materiais);
+  const r = calcularLPServico(dados.valor, dados.iss, dados.materiais, cfg.aliq);
   const ret = calcularRetencoes(r, dados);
   out.innerHTML = montarResultado(r, dados, cfg, ret);
   out.hidden = false;
@@ -170,8 +171,8 @@ function montarResultado(r, d, cfg, ret) {
         <tr><td>PIS (${P(PIS)})</td><td>${R(a.pis)}</td></tr>
         <tr><td>COFINS (${P(COFINS)})</td><td>${R(a.cofins)}</td></tr>
         <tr><td>ISS (${linhaIss})</td><td>${R(a.iss)}</td></tr>
-        <tr><td>IRPJ (${P(IRPJ)})</td><td>${R(a.irpj)}</td></tr>
-        <tr><td>CSLL (${P(CSLL)})</td><td>${R(a.csll)}</td></tr>
+        <tr><td>IRPJ (${P(r.irpjAliquota)})</td><td>${R(a.irpj)}</td></tr>
+        <tr><td>CSLL (${P(r.csllAliquota)})</td><td>${R(a.csll)}</td></tr>
         <tr class="destaque"><td>Total de tributos</td><td>${R(a.totalTributos)}</td></tr>
         <tr class="destaque"><td>Lucro</td><td>${R(a.lucro)}</td></tr>
         <tr class="destaque"><td>Preço ao cliente</td><td>${R(a.precoCliente)}</td></tr>
@@ -188,8 +189,8 @@ function montarResultado(r, d, cfg, ret) {
         <tr><td>CBS (${P(CBS)}) <span class="tag">por fora*</span></td><td>${R(n.cbs)}</td></tr>
         <tr><td>IBS (${P(IBS)}) <span class="tag">por fora*</span></td><td>${R(n.ibs)}</td></tr>
         <tr><td>ISS (${linhaIss}) <span class="tag">ainda vigente 2027</span></td><td>${R(n.iss)}</td></tr>
-        <tr><td>IRPJ (${P(IRPJ)})</td><td>${R(n.irpj)}</td></tr>
-        <tr><td>CSLL (${P(CSLL)})</td><td>${R(n.csll)}</td></tr>
+        <tr><td>IRPJ (${P(r.irpjAliquota)})</td><td>${R(n.irpj)}</td></tr>
+        <tr><td>CSLL (${P(r.csllAliquota)})</td><td>${R(n.csll)}</td></tr>
         <tr class="destaque"><td>Total de tributos</td><td>${R(n.totalTributos)}</td></tr>
         <tr class="destaque"><td>Lucro</td><td>${R(n.lucro)}</td></tr>
         <tr class="destaque"><td>Preço ao cliente</td><td>${R(n.precoCliente)}</td></tr>
@@ -212,7 +213,7 @@ function montarResultado(r, d, cfg, ret) {
     <p>* CBS e IBS destacados na nota: cobrados por fora do preço base.</p>
     <p>O ISS permanece até a implementação plena do IBS.</p>
     <p>“Lucro” é o saldo após os tributos considerados, antes de custos e despesas (equipamentos, materiais, mão de obra, deslocamento e despesas operacionais). A ferramenta não garante a preservação da margem real.</p>
-    ${d.temMateriais ? '<p>O adicional de materiais entra no valor da nota, mas foi abatido da base de cálculo de todos os tributos (PIS, COFINS, ISS, IRPJ, CSLL, CBS e IBS). O “Lucro” considera só o serviço; os materiais são repassados pelo valor informado. Confirmar com o contador a comprovação exigida para a dedução.</p>' : ''}
+    ${d.temMateriais ? '<p>O adicional de materiais só soma no valor da nota (bruto e líquido): nenhum tributo nem retenção é calculado sobre ele. O “Lucro” considera só o serviço; os materiais são repassados pelo valor informado.</p>' : ''}
     <p>Estimativa com base nas premissas de transição de 2027 adotadas nesta ferramenta. Alíquotas e regras aplicáveis devem ser confirmadas conforme a legislação vigente. Custos e despesas operacionais não estão incluídos.</p>
     <p>Para serviços de engenharia e instalação de ar-condicionado, confirmar enquadramento tributário e retenções conforme a atividade e o contrato. Esta simulação não contempla particularidades de contratos mistos ou fornecimento de equipamentos junto à instalação.</p>
   </div>
