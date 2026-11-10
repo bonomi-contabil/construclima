@@ -34,10 +34,12 @@ test('materiais (dedução) saem só da base do ISS e das retenções', () => {
   perto(a.atual.baseIss, 750);
   perto(a.atual.iss, 37.5);                      // exemplo do cliente
   for (const k of ['pis', 'cofins', 'irpj', 'csll']) perto(a.atual[k], b.atual[k]);
-  for (const k of ['precoBase', 'baseCbsIbs', 'cbs', 'ibs', 'irpj', 'csll', 'totalNF']) perto(a.novo[k], b.novo[k]);
+  for (const k of ['precoBase', 'irpj', 'csll']) perto(a.novo[k], b.novo[k]);
   perto(a.novo.precoBase, 961.58);
-  perto(a.novo.cbs, 103.59);
-  perto(a.novo.totalNF, 1066.08);
+  perto(a.novo.baseCbsIbs, 926.00);   // 961,58 − 35,58
+  perto(a.novo.cbs, 105.01);
+  perto(a.novo.ibs, 0.93);
+  perto(a.novo.totalNF, 961.5789 + 926.0 * 0.1144);
   perto(a.novo.baseIss, 961.5789 - 250);
   perto(a.novo.iss, (961.5789 - 250) * 0.05);
   const ret = calcularRetencoes(a, { reterInss: true, reterIss: true });

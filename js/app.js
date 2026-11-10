@@ -231,7 +231,7 @@ function montarResultado(r, d, cfg, ret) {
     <p>* CBS e IBS destacados na nota: cobrados por fora do preço base.</p>
     <p>O ISS permanece até a implementação plena do IBS.</p>
     <p>“Lucro” é o saldo após os tributos considerados, antes de custos e despesas (equipamentos, materiais, mão de obra, deslocamento e despesas operacionais). A ferramenta não garante a preservação da margem real.</p>
-    ${d.temMateriais ? '<p>Os materiais utilizados estão incluídos no valor total do serviço e foram deduzidos apenas da base do ISS e das retenções de INSS e ISS. PIS, COFINS, IRPJ, CSLL, CBS e IBS incidem sobre o valor cheio.</p>' : ''}
+    ${d.temMateriais ? '<p>Os materiais utilizados estão incluídos no valor total do serviço e foram deduzidos da base do ISS e das retenções de INSS e ISS. A base da CBS/IBS é o preço base menos o ISS com essa dedução. PIS, COFINS, IRPJ e CSLL incidem sobre o valor cheio.</p>' : ''}
     <p>Estimativa com base nas premissas de transição de 2027 adotadas nesta ferramenta. Alíquotas e regras aplicáveis devem ser confirmadas conforme a legislação vigente. Custos e despesas operacionais não estão incluídos.</p>
     <p>Para serviços de engenharia e instalação de ar-condicionado, confirmar enquadramento tributário e retenções conforme a atividade e o contrato. Esta simulação não contempla particularidades de contratos mistos ou fornecimento de equipamentos junto à instalação.</p>
   </div>

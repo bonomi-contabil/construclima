@@ -31,8 +31,9 @@ export function parseBR(texto) {
 /**
  * Lucro Presumido — Serviço, com ISS informado pelo usuário.
  * Materiais utilizados (dedução): ficam DENTRO do valor total do serviço e são
- * deduzidos apenas da base do ISS e das retenções (INSS/ISS). Todo o resto
- * (PIS, COFINS, IRPJ, CSLL, preço base, CBS e IBS) é igual ao cálculo sem materiais.
+ * deduzidos da base do ISS e das retenções (INSS/ISS). A base da CBS/IBS é o
+ * preço base − ISS pago (com dedução). PIS, COFINS, IRPJ, CSLL e o preço base
+ * são iguais ao cálculo sem materiais.
  * Ex.: serviço R$ 1.000,00 e materiais R$ 250,00, ISS 5% → base do ISS R$ 750,00 → ISS R$ 37,50.
  * @param {number} valorServico  valor total atual do serviço (R$), materiais incluídos
  * @param {number} issPercent    alíquota do ISS do município (%), ex.: 5 ou 2,5
@@ -59,13 +60,13 @@ export function calcularLPServico(valorServico, issPercent, materiais = 0, aliq 
   atual.precoCliente = V;
   atual.carga = atual.totalTributos / V;
 
-  // Preço base, CBS/IBS, IRPJ e CSLL: iguais ao cálculo sem materiais (nada muda).
-  // Só o ISS (e as retenções) usam a base deduzida dos materiais.
+  // Preço base, IRPJ e CSLL: iguais ao cálculo sem materiais.
+  // ISS, retenções e base da CBS/IBS usam o ISS com a dedução dos materiais.
   const baseBruta = V - atual.pis - atual.cofins - V * iss;
   const precoBase = baseBruta / (1 - iss);
   const baseIss = precoBase - M;
   const issNovo = baseIss * iss;
-  const baseCbsIbs = precoBase - precoBase * iss; // = base bruta, sem efeito da dedução
+  const baseCbsIbs = precoBase - issNovo; // preço base − ISS pago (já com a dedução dos materiais)
   const novo = {
     baseBruta,
     precoBase,
