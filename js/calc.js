@@ -30,66 +30,70 @@ export function parseBR(texto) {
 
 /**
  * Lucro Presumido — Serviço, com ISS informado pelo usuário.
- * O adicional de materiais entra no valor da nota, mas é ABATIDO da base de
- * cálculo de todos os tributos (PIS, COFINS, ISS, IRPJ, CSLL, CBS e IBS):
- * os tributos incidem só sobre o valor do serviço.
- * @param {number} valorServico  valor atual do serviço (R$), sem materiais
+ * Materiais utilizados (dedução): ficam DENTRO do valor total do serviço e são
+ * deduzidos apenas da base do ISS e das retenções (INSS/ISS). Todo o resto
+ * (PIS, COFINS, IRPJ, CSLL, preço base, CBS e IBS) é igual ao cálculo sem materiais.
+ * Ex.: serviço R$ 1.000,00 e materiais R$ 250,00, ISS 5% → base do ISS R$ 750,00 → ISS R$ 37,50.
+ * @param {number} valorServico  valor total atual do serviço (R$), materiais incluídos
  * @param {number} issPercent    alíquota do ISS do município (%), ex.: 5 ou 2,5
- * @param {number} [materiais=0] adicional de materiais (R$)
+ * @param {number} [materiais=0] materiais utilizados — dedução (R$)
  * @param {{irpj?: number, csll?: number}} [aliq] alíquotas de IRPJ/CSLL (padrão: instalações)
  */
 export function calcularLPServico(valorServico, issPercent, materiais = 0, aliq = {}) {
   const iss = issPercent / 100;
   const irpjA = aliq.irpj ?? IRPJ;
   const csllA = aliq.csll ?? CSLL;
-  const S = valorServico;      // base de cálculo (materiais abatidos)
-  const V = S + materiais;     // valor total da nota atual
+  const V = valorServico;      // valor total da nota atual
+  const M = materiais;         // dedução da base do ISS
 
   const atual = {
-    base: S,
-    pis: S * PIS,
-    cofins: S * COFINS,
-    iss: S * iss,
-    irpj: S * irpjA,
-    csll: S * csllA,
+    baseIss: V - M,
+    pis: V * PIS,
+    cofins: V * COFINS,
+    iss: (V - M) * iss,
+    irpj: V * irpjA,
+    csll: V * csllA,
   };
   atual.totalTributos = atual.pis + atual.cofins + atual.iss + atual.irpj + atual.csll;
-  atual.lucro = S - atual.totalTributos;
+  atual.lucro = V - atual.totalTributos;
   atual.precoCliente = V;
   atual.carga = atual.totalTributos / V;
 
-  const baseBruta = S - atual.pis - atual.cofins - atual.iss;
-  const precoBaseServico = baseBruta / (1 - iss);
-  const issNovo = precoBaseServico * iss;
-  const baseCbsIbs = precoBaseServico - issNovo;
+  // Preço base, CBS/IBS, IRPJ e CSLL: iguais ao cálculo sem materiais (nada muda).
+  // Só o ISS (e as retenções) usam a base deduzida dos materiais.
+  const baseBruta = V - atual.pis - atual.cofins - V * iss;
+  const precoBase = baseBruta / (1 - iss);
+  const baseIss = precoBase - M;
+  const issNovo = baseIss * iss;
+  const baseCbsIbs = precoBase - precoBase * iss; // = base bruta, sem efeito da dedução
   const novo = {
     baseBruta,
-    precoBaseServico,
-    precoBase: precoBaseServico + materiais, // valor sem CBS/IBS (serviço + materiais)
+    precoBase,
+    precoBaseServico: precoBase,
+    baseIss,
     iss: issNovo,
     baseCbsIbs,
     cbs: baseCbsIbs * CBS,
     ibs: baseCbsIbs * IBS,
-    irpj: precoBaseServico * irpjA,
-    csll: precoBaseServico * csllA,
+    irpj: precoBase * irpjA,
+    csll: precoBase * csllA,
   };
   novo.totalTributos = novo.iss + novo.irpj + novo.csll + novo.cbs + novo.ibs;
-  novo.lucro = precoBaseServico - novo.iss - novo.irpj - novo.csll;
-  novo.totalNF = novo.precoBase + novo.cbs + novo.ibs;
+  novo.lucro = precoBase - novo.iss - novo.irpj - novo.csll;
+  novo.totalNF = precoBase + novo.cbs + novo.ibs;
   novo.precoCliente = novo.totalNF;
 
   const variacao = ((novo.totalNF - V) / V) * 100;
-  return { V, valorServico, materiais, issAliquota: iss, irpjAliquota: irpjA, csllAliquota: csllA, atual, novo, variacao };
+  return { V, valorServico, materiais: M, issAliquota: iss, irpjAliquota: irpjA, csllAliquota: csllA, atual, novo, variacao };
 }
 
 /**
- * Retenções na nota pós-reforma. Base de cálculo = preço base do serviço pós-reforma
- * (sem materiais: nenhum tributo nem retenção incide sobre os materiais).
+ * Retenções na nota pós-reforma. Base = preço base pós-reforma − materiais (dedução).
  * INSS: 11%. ISS: a alíquota do ISS informada.
  * Valor líquido = Valor bruto da NF (total pós-reforma) − retenções.
  */
 export function calcularRetencoes(r, { reterInss = false, reterIss = false } = {}) {
-  const base = r.novo.precoBaseServico;
+  const base = r.novo.baseIss;
   const inss = reterInss ? base * INSS_RET : 0;
   const iss = reterIss ? base * r.issAliquota : 0;
   const bruto = r.novo.totalNF;
@@ -102,6 +106,7 @@ export function validar({ valor, iss, municipio, temMateriais, materiais }) {
   if (!municipio || !String(municipio).trim()) erros.push('Informe o município da prestação do serviço.');
   if (!(iss > 0 && iss < 100)) erros.push('Informe a alíquota do ISS: maior que 0% e menor que 100%.');
   if (!(valor > 0)) erros.push('Informe um valor atual maior que zero.');
-  if (temMateriais && !(materiais > 0)) erros.push('Informe o valor do adicional de materiais (maior que zero).');
+  if (temMateriais && !(materiais > 0)) erros.push('Informe o valor dos materiais utilizados (maior que zero).');
+  else if (temMateriais && valor > 0 && materiais >= valor) erros.push('O valor dos materiais deve ser menor que o valor total do serviço.');
   return erros;
 }
