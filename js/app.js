@@ -149,9 +149,9 @@ function montarResultado(r, d, cfg, ret) {
   ].filter(Boolean).map((t) => `<div>${t}</div>`).join('');
 
   const valorLinhas = d.temMateriais
-    ? `<tr><td>Valor do serviço</td><td>${R(r.valorServico)}</td></tr>
-       <tr><td>Adicional de materiais <span class="tag">fora da base</span></td><td>${R(r.materiais)}</td></tr>
-       <tr class="sub"><td>Base de cálculo dos tributos (só serviço)</td><td>${R(r.valorServico)}</td></tr>`
+    ? `<tr><td>Valor total do serviço</td><td>${R(r.V)}</td></tr>
+       <tr><td>(−) Materiais utilizados — dedução</td><td>${R(r.materiais)}</td></tr>
+       <tr class="sub"><td>Base do ISS</td><td>${R(a.baseIss)}</td></tr>`
     : `<tr><td>Valor do serviço</td><td>${R(r.V)}</td></tr>`;
 
   return `
@@ -200,9 +200,9 @@ function montarResultado(r, d, cfg, ret) {
       <h3>Pós-reforma (2027)</h3>
       <table>
         ${d.temMateriais
-          ? `<tr><td>Preço base do serviço</td><td>${R(n.precoBaseServico)}</td></tr>
-             <tr><td>Adicional de materiais <span class="tag">fora da base</span></td><td>${R(r.materiais)}</td></tr>
-             <tr class="sub"><td>Preço base total (sem CBS/IBS)</td><td>${R(n.precoBase)}</td></tr>`
+          ? `<tr><td>Preço base do serviço</td><td>${R(n.precoBase)}</td></tr>
+             <tr><td>(−) Materiais utilizados — dedução</td><td>${R(r.materiais)}</td></tr>
+             <tr class="sub"><td>Base do ISS e retenções</td><td>${R(n.baseIss)}</td></tr>`
           : `<tr><td>Preço base do serviço</td><td>${R(n.precoBase)}</td></tr>`}
         <tr><td>CBS (${P(CBS)}) <span class="tag">por fora*</span></td><td>${R(n.cbs)}</td></tr>
         <tr><td>IBS (${P(IBS)}) <span class="tag">por fora*</span></td><td>${R(n.ibs)}</td></tr>
@@ -231,7 +231,7 @@ function montarResultado(r, d, cfg, ret) {
     <p>* CBS e IBS destacados na nota: cobrados por fora do preço base.</p>
     <p>O ISS permanece até a implementação plena do IBS.</p>
     <p>“Lucro” é o saldo após os tributos considerados, antes de custos e despesas (equipamentos, materiais, mão de obra, deslocamento e despesas operacionais). A ferramenta não garante a preservação da margem real.</p>
-    ${d.temMateriais ? '<p>O adicional de materiais só soma no valor da nota (bruto e líquido): nenhum tributo nem retenção é calculado sobre ele. O “Lucro” considera só o serviço; os materiais são repassados pelo valor informado.</p>' : ''}
+    ${d.temMateriais ? '<p>Os materiais utilizados estão incluídos no valor total do serviço e foram deduzidos apenas da base do ISS e das retenções de INSS e ISS. PIS, COFINS, IRPJ, CSLL, CBS e IBS incidem sobre o valor cheio.</p>' : ''}
     <p>Estimativa com base nas premissas de transição de 2027 adotadas nesta ferramenta. Alíquotas e regras aplicáveis devem ser confirmadas conforme a legislação vigente. Custos e despesas operacionais não estão incluídos.</p>
     <p>Para serviços de engenharia e instalação de ar-condicionado, confirmar enquadramento tributário e retenções conforme a atividade e o contrato. Esta simulação não contempla particularidades de contratos mistos ou fornecimento de equipamentos junto à instalação.</p>
   </div>
