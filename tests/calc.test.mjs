@@ -27,22 +27,17 @@ test('ISS informado (2%) muda a conta', () => {
   perto(r.novo.totalNF, 943.50 / 0.98 + 943.50 * 0.1144);
 });
 
-test('materiais (dedução) saem só da base do ISS', () => {
+test('materiais abatidos da base de todos os tributos', () => {
   const a = calcularLPServico(1000, 5, 500);
-  perto(a.V, 1000);
-  perto(a.atual.baseIss, 500);
-  perto(a.atual.iss, 25);          // 5% de 500
-  perto(a.atual.pis, 6.5);         // PIS/COFINS/IRPJ/CSLL sobre o valor cheio
-  perto(a.atual.cofins, 30);
-  perto(a.atual.irpj, 48);
-  perto(a.atual.csll, 28.8);
-  perto(a.novo.baseBruta, 938.5);
-  perto(a.novo.precoBase, (938.5 - 25) / 0.95);
-  perto(a.novo.baseIss, (938.5 - 25) / 0.95 - 500);
-  perto(a.novo.precoBase - a.novo.iss, 938.5); // sobra o mesmo de hoje
-  perto(a.novo.cbs, a.novo.baseCbsIbs * 0.1134);
-  perto(a.novo.totalNF, a.novo.precoBase + a.novo.cbs + a.novo.ibs);
-  perto(a.atual.precoCliente, 1000);
+  const b = calcularLPServico(1000, 5);
+  perto(a.V, 1500);
+  // tributos idênticos aos do serviço sozinho
+  for (const k of ['pis', 'cofins', 'iss', 'irpj', 'csll', 'totalTributos', 'lucro']) perto(a.atual[k], b.atual[k]);
+  for (const k of ['iss', 'irpj', 'csll', 'cbs', 'ibs', 'baseCbsIbs', 'totalTributos', 'lucro']) perto(a.novo[k], b.novo[k]);
+  perto(a.atual.precoCliente, 1500);
+  perto(a.novo.precoBase, 961.58 + 500);
+  perto(a.novo.totalNF, 1066.08 + 500);
+  perto(a.variacao, (66.0833 / 1500) * 100, 0.001);
 });
 
 test('retenções de INSS (11%) e ISS sobre o preço base pós-reforma', () => {
@@ -56,13 +51,12 @@ test('retenções de INSS (11%) e ISS sobre o preço base pós-reforma', () => {
   const ambos = calcularRetencoes(r, { reterInss: true, reterIss: true });
   perto(ambos.iss, 961.5789 * 0.05);
   perto(ambos.liquido, 1066.0833 - 105.7737 - 48.0789);
-  // com materiais, a base das retenções é preço base − materiais
-  const m = calcularLPServico(1000, 5, 500);
+  // com materiais, a base é só o serviço; materiais só somam no bruto/líquido
+  const m = calcularLPServico(1000, 2, 500);
   const rm = calcularRetencoes(m, { reterInss: true, reterIss: true });
-  perto(rm.base, m.novo.precoBase - 500);
-  perto(rm.inss, rm.base * 0.11);
-  perto(rm.iss, rm.base * 0.05);
-  perto(rm.liquido, m.novo.totalNF - rm.base * 0.16);
+  perto(rm.base, m.novo.precoBaseServico);
+  perto(rm.base, 943.5 / 0.98);
+  perto(rm.liquido, m.novo.totalNF - m.novo.precoBaseServico * 0.13);
 });
 
 test('Serviços em Obras: IRPJ 1,20% e CSLL 1,08%; pós-reforma sem PIS/COFINS', () => {
@@ -106,6 +100,5 @@ test('validação recusa vazio, zero, negativo e ISS fora do intervalo', () => {
   assert.equal(validar({ valor: 10, iss: 100, municipio: 'X' }).length, 1);
   assert.equal(validar({ valor: 10, iss: 5, municipio: '  ' }).length, 1);
   assert.equal(validar({ valor: 10, iss: 5, municipio: 'X', temMateriais: true, materiais: NaN }).length, 1);
-  assert.equal(validar({ valor: 10, iss: 5, municipio: 'X', temMateriais: true, materiais: 5 }).length, 0);
-  assert.equal(validar({ valor: 10, iss: 5, municipio: 'X', temMateriais: true, materiais: 10 }).length, 1);
+  assert.equal(validar({ valor: 10, iss: 5, municipio: 'X', temMateriais: true, materiais: 50 }).length, 0);
 });
