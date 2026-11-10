@@ -204,8 +204,8 @@ function montarResultado(r, d, cfg, ret) {
              <tr><td>(−) Materiais utilizados — dedução</td><td>${R(r.materiais)}</td></tr>
              <tr class="sub"><td>Base do ISS e retenções</td><td>${R(n.baseIss)}</td></tr>`
           : `<tr><td>Preço base do serviço</td><td>${R(n.precoBase)}</td></tr>`}
-        <tr><td>CBS (${P(CBS)}) <span class="tag">por fora*</span></td><td>${R(n.cbs)}</td></tr>
-        <tr><td>IBS (${P(IBS)}) <span class="tag">por fora*</span></td><td>${R(n.ibs)}</td></tr>
+        <tr><td>CBS (${P(CBS)}) <span class="tag">por fora - Cliente - Crédito*</span></td><td>${R(n.cbs)}</td></tr>
+        <tr><td>IBS (${P(IBS)}) <span class="tag">por fora - Cliente Crédito*</span></td><td>${R(n.ibs)}</td></tr>
         <tr><td>ISS (${linhaIss}) <span class="tag">ainda vigente 2027</span></td><td>${R(n.iss)}</td></tr>
         <tr><td>IRPJ (${P(r.irpjAliquota)})</td><td>${R(n.irpj)}</td></tr>
         <tr><td>CSLL (${P(r.csllAliquota)})</td><td>${R(n.csll)}</td></tr>
